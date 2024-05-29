@@ -154,6 +154,17 @@ def display_latest_interaction(user_input, answer):
     st.markdown(f"**User**: {answer}")
     st.markdown("---")  # Optional: adds a horizontal line for better separation
 
+def generate_and_display_graph(user_input):
+    # Assuming lida.summarize and lida.visualize are defined elsewhere
+    csv_path = r"cu_citadel.csv"  # Adjust the path as necessary
+    summary = lida.summarize(csv_path, summary_method="default", textgen_config=textgen_config)  # Ensure textgen_config is defined
+    charts = lida.visualize(summary=summary, goal=user_input, textgen_config=textgen_config)
+    if charts:
+        image_base64 = charts[0].raster
+        img = base64_to_image(image_base64)
+        st.image(img)
+        st.markdown("---")
+
 def process_user_input(user_input, context, chat_container, regenerate):
     # Save or update the last user input in session state for regeneration purposes
     if not regenerate:
@@ -191,16 +202,7 @@ def process_user_input(user_input, context, chat_container, regenerate):
                 generate_and_display_graph(user_input)
 
 
-def generate_and_display_graph(user_input):
-    # Assuming lida.summarize and lida.visualize are defined elsewhere
-    csv_path = r"cu_citadel.csv"  # Adjust the path as necessary
-    summary = lida.summarize(csv_path, summary_method="default", textgen_config=textgen_config)  # Ensure textgen_config is defined
-    charts = lida.visualize(summary=summary, goal=user_input, textgen_config=textgen_config)
-    if charts:
-        image_base64 = charts[0].raster
-        img = base64_to_image(image_base64)
-        st.image(img)
-        st.markdown("---")
+
 
 def calculate_growth_rate(df, attribute, group, group_value, quarter_1, quarter_2):
     # Filter the data for the selected group in the given quarters
