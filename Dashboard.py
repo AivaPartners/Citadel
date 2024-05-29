@@ -202,7 +202,7 @@ def process_user_input(user_input, context, chat_container, regenerate):
             st.markdown("---")
 
             # Check if the user input contains any of the keywords and this is the most recent interaction
-            if i == len(st.session_state['chat_history']) - 1 and any(keyword in user_input.lower() for keyword in ["plot", "graph", "chart"]):
+            if i == len(st.session_state['chat_history']) - 1 and any(keyword in user_input.lower() for keyword in ["plot", "graph", "chart","graphically","visualize"]):
                 generate_and_display_graph(user_input)
 
 
