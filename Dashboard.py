@@ -416,7 +416,7 @@ def main():
                 </style>
                 """
                 st.markdown(custom_css, unsafe_allow_html=True)
-            file_paths1 = r'10Year+lat_Q.csv'
+            file_paths1 = r'10Year+latQ.csv'
             file_paths2 = r'FOICU.txt'
             file_paths3 = r'ATM Locations.csv'
             
