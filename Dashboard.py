@@ -22,6 +22,7 @@ st.set_page_config(page_title="CU Benchmarking BI", page_icon=":bar_chart:", lay
 # st.title(" 5300 Credit Union Metrics")
 st.markdown('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
 
+
 # Database connection parameters
 dbname = "postgres"
 user = "postgres"
@@ -38,7 +39,7 @@ load_dotenv()
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 lida = Manager(text_gen=llm("openai"))
-textgen_config = TextGenerationConfig(n=1, temperature=0.5, model="gpt-4-turbo", use_cache=True)
+textgen_config = TextGenerationConfig(n=1, temperature=0.5, model="gpt-3.5-turbo", use_cache=True)
 
 file_path = r"cu_citadel.csv"
 
@@ -55,7 +56,7 @@ def load_and_preprocess_csv(file_path):
     df = pd.read_csv(file_path)
     # Example preprocessing: Concatenate the first few rows into a string to use as context.
     # Adjust this based on your CSV structure and needs.
-    context = ". ".join(df.apply(lambda row: ', '.join(row.astype(str)), axis=1)) + "."
+    context = ". ".join(df.head().apply(lambda row: ', '.join(row.astype(str)), axis=1)) + "."
     return context
     
 
@@ -64,7 +65,7 @@ def query_gpt_3_5_turbo_with_context(prompt, context):
     Queries GPT-3.5 Turbo with a given prompt and context.
     """
     client = openai.OpenAI(api_key=openai.api_key)
-    model="gpt-4-turbo"
+    model="gpt-3.5-turbo"
     messages = [
     {
         "role": "system",
@@ -90,21 +91,29 @@ def query_gpt_3_5_turbo_with_context(prompt, context):
     response = client.chat.completions.create(
             model=model,
             messages=messages,
-            temperature=0
+            temperature=0,
+            max_tokens= 300
         )
     return response.choices[0].message.content
-
-def display_latest_interaction(user_input, answer):
-    st.markdown(f"**User**: {user_input}")
-    st.markdown(f"**User**: {answer}")
-    st.markdown("---")  # Optional: adds a horizontal line for better separation
-
+    
 def generate_suggested_prompts(context, chat_history):
     """
     Generates suggested prompts based on the given context and chat history.
     """
+
+     # Hardcoded prompts to return when there is no chat history
+    default_prompts = [
+        "What are the key financial metrics to look at?",
+        "How did credit union perform last quarter?",
+        "Compare the growth rate of credit union based on total assests."
+    ]
+
+    # Check if chat history is empty and return the hardcoded prompts
+    if chat_history == [{'user': "Hi", 'bot': "Hello! Ask me anything about your data 🤗"}] or chat_history == [] or len(chat_history) <= 1:
+        return default_prompts
+        
     client = openai.OpenAI(api_key=openai.api_key)
-    model = "gpt-4-turbo"
+    model = "gpt-3.5-turbo"
 
     # Prepare the chat history for the API call 
     history_formatted = [{"role": "user", "content": entry['user']} for entry in chat_history]
@@ -135,9 +144,15 @@ def generate_suggested_prompts(context, chat_history):
         # Return a default set of prompts in case of an error
         return [
             "What are the key financial metrics to look at?",
-            "How did credit union 61650 perform last quarter?",
-            "Compare the growth rate of credit unions 61650 and 61466."
+            "How did credit union  perform last quarter?",
+            "Compare the growth rate of credit unions based on total assests."
         ]
+
+
+def display_latest_interaction(user_input, answer):
+    st.markdown(f"**User**: {user_input}")
+    st.markdown(f"**User**: {answer}")
+    st.markdown("---")  # Optional: adds a horizontal line for better separation
 
 def process_user_input(user_input, context, chat_container, regenerate):
     # Save or update the last user input in session state for regeneration purposes
@@ -290,7 +305,7 @@ def main():
         # Use columns only for displaying the prompts
         col_layout = st.columns(3)
         for idx, prompt in enumerate(st.session_state['dynamic_prompts']):
-            with col_layout[idx % 3]:  # Distribute prompts across columns
+            with col_layout[idx % 3]:  # Distribute prompts across columns['chat_history'][-1]
                 if st.button(prompt, key=f"prompt_{idx}"):
                     st.session_state['selected_prompt'] = prompt
                     # Flag indicating that a prompt has been selected
@@ -307,6 +322,14 @@ def main():
         user_input = st.chat_input("Type your question here...", key="user_input")
         if user_input:
             process_user_input(user_input, context, chat_container, regenerate=False)
+      
+            st.session_state['chat_history'].append({'user': user_input, 'bot': ''})  # Placeholder bot response
+
+            # Generate new prompts based on updated chat history
+            st.session_state['dynamic_prompts'] = generate_suggested_prompts(context, st.session_state['chat_history'])
+
+            # Simulate bot response (you should replace this with the actual bot response)
+            st.session_state['chat_history'][-1]['bot'] = "Bot's response to the user's question"
 
         # Button to regenerate the last response
         if 'last_user_input' in st.session_state and st.button("Regenerate Last Response"):
@@ -393,9 +416,10 @@ def main():
                 </style>
                 """
                 st.markdown(custom_css, unsafe_allow_html=True)
-            file_paths1 = r'10Year+latQ.csv'
+            file_paths1 = r'10Year+lat_Q.csv'
             file_paths2 = r'FOICU.txt'
             file_paths3 = r'ATM Locations.csv'
+            
             # df, df2 = load_data_from_db(file_path1,file_path2)
             df = pd.read_csv(file_paths1)
             df2 = pd.read_csv(file_paths2)
