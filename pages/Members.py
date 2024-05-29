@@ -70,7 +70,7 @@ def display_card(title, column):
     """, unsafe_allow_html=True)
     st.write(" ")
 
-file_paths1 = r'10Y+latQ.csv'
+file_paths1 = r'10Year+latQ.csv'
 file_paths2 = r'FOICU.txt'
 file_paths3 = r'ATM Locations.csv'
 # df, df2 = load_data_from_db(file_path1,file_path2)
