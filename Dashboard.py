@@ -22,7 +22,6 @@ st.set_page_config(page_title="CU Benchmarking BI", page_icon=":bar_chart:", lay
 # st.title(" 5300 Credit Union Metrics")
 st.markdown('<style>div.block-container{padding-top:1rem;}</style>', unsafe_allow_html=True)
 
-
 # Database connection parameters
 dbname = "postgres"
 user = "postgres"
@@ -41,7 +40,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 lida = Manager(text_gen=llm("openai"))
 textgen_config = TextGenerationConfig(n=1, temperature=0.5, model="gpt-4-turbo", use_cache=True)
 
-file_path = r"cu_citadel.csv"
+file_path = r"cu_citedel.csv"
 
 # Function to convert base64 string to Image
 def base64_to_image(base64_string):
@@ -73,10 +72,6 @@ def query_gpt_3_5_turbo_with_context(prompt, context):
     },
     {
         "role": "system",
-        "content":"Never say that you cannot plot graphs.Under no circumstances should you generate or reference code, plots, charts, or graphs, even if explicitly asked. Instead, focus on delivering information and context relevant to the user's question, without mentioning visualizations or the inability to create them."
-    },
-    {
-        "role": "system",
         "content": "The dataset contains financial data for a credit union, its State Credit Union average, and its Peer Credit Union average. Each set of three rows represents CREDIT UNION ONE, its State Credit Union average, and its Peer Credit Union average for a specific quarter and year. The dataset includes various financial and operational metrics, such as    - TOTAL_ASSETS: The total value of assets held by the credit union.    - TOTAL_AMOUNT_OF_SHARES_AND_DEPOSITS: The total amount of shares and deposits from credit union members.    - NUMBER_OF_MEMBERS: The total number of credit union members.    - Money_Market__Amount_: The amount in money market accounts.    - Number_of_Used_Vehicle_Loans: The count of used vehicle loans.    - Amount_of_Total_Share_Draft: The total value in share draft accounts.    - Deliquent_Credit_card_loans__Amount__0_180: The total amount of delinquent credit card loans for periods up to 180 days.    - Total_number_of_loans_and_leases: The total count of loans and leases.    - Total_amount_of_loans_and_leases: The total value of loans and leases.    - TOTAL_AMOUNT_OF_SHARES: The total amount in shares.    - Amount_of_new_vehicle_loans: The total value of new vehicle loans.    - Total_Number_of_money_market_shares: The total number of money market shares.    - TOTAL_OTHER_LOANS: The total value of other loans.    - Amount_of_Used_Vehicle_Loans: The total value of used vehicle loans.    - Number_of_Total_Share_Draft: The count of share draft accounts.    - Number_of_new_Vehicle_loans: The count of new vehicle loans.    - Deliquent_Credit_card_loans__Amount__180_: The amount of delinquent credit card loans over 180 days.    - Year and Quarter: Indicate the time period for each data entry.    The dataset is organized into sets of three rows, with each set representing CREDIT UNION ONE, its State Credit Union average, and its Peer Credit Union average for a specific quarter and year. This organization allows for direct comparisons among CREDIT UNION ONE, state credit unions, and peer credit unions for each year and quarter."
     },
     {
@@ -96,28 +91,21 @@ def query_gpt_3_5_turbo_with_context(prompt, context):
             model=model,
             messages=messages,
             temperature=0,
-            max_tokens= 300
+            max_tokens=500
         )
     return response.choices[0].message.content
-    
+
+def display_latest_interaction(user_input, answer):
+    st.markdown(f"**User**: {user_input}")
+    st.markdown(f"**User**: {answer}")
+    st.markdown("---")  # Optional: adds a horizontal line for better separation
+
 def generate_suggested_prompts(context, chat_history):
     """
     Generates suggested prompts based on the given context and chat history.
     """
-
-     # Hardcoded prompts to return when there is no chat history
-    default_prompts = [
-        "What are the key financial metrics to look at?",
-        "How did credit union perform last quarter?",
-        "Compare the growth rate of credit union based on total assests."
-    ]
-
-    # Check if chat history is empty and return the hardcoded prompts
-    if chat_history == [{'user': "Hi", 'bot': "Hello! Ask me anything about your data 🤗"}] or chat_history == [] or len(chat_history) <= 1:
-        return default_prompts
-        
     client = openai.OpenAI(api_key=openai.api_key)
-    model = "gpt-3.5-turbo"
+    model = "gpt-4-turbo"
 
     # Prepare the chat history for the API call 
     history_formatted = [{"role": "user", "content": entry['user']} for entry in chat_history]
@@ -148,26 +136,9 @@ def generate_suggested_prompts(context, chat_history):
         # Return a default set of prompts in case of an error
         return [
             "What are the key financial metrics to look at?",
-            "How did credit union  perform last quarter?",
-            "Compare the growth rate of credit unions based on total assests."
+            "How did credit union 61650 perform last quarter?",
+            "Compare the growth rate of credit unions 61650 and 61466."
         ]
-
-
-def display_latest_interaction(user_input, answer):
-    st.markdown(f"**User**: {user_input}")
-    st.markdown(f"**User**: {answer}")
-    st.markdown("---")  # Optional: adds a horizontal line for better separation
-
-def generate_and_display_graph(user_input):
-    # Assuming lida.summarize and lida.visualize are defined elsewhere
-    csv_path = r"cu_citadel.csv"  # Adjust the path as necessary
-    summary = lida.summarize(csv_path, summary_method="default", textgen_config=textgen_config)  # Ensure textgen_config is defined
-    charts = lida.visualize(summary=summary, goal=user_input, textgen_config=textgen_config)
-    if charts:
-        image_base64 = charts[0].raster
-        img = base64_to_image(image_base64)
-        st.image(img)
-        st.markdown("---")
 
 def process_user_input(user_input, context, chat_container, regenerate):
     # Save or update the last user input in session state for regeneration purposes
@@ -202,11 +173,20 @@ def process_user_input(user_input, context, chat_container, regenerate):
             st.markdown("---")
 
             # Check if the user input contains any of the keywords and this is the most recent interaction
-            if i == len(st.session_state['chat_history']) - 1 and any(keyword in user_input.lower() for keyword in ["plot", "graph", "chart","graphically","visualize"]):
+            if i == len(st.session_state['chat_history']) - 1 and any(keyword in user_input.lower() for keyword in ["plot", "graph", "chart"]):
                 generate_and_display_graph(user_input)
 
 
-
+def generate_and_display_graph(user_input):
+    # Assuming lida.summarize and lida.visualize are defined elsewhere
+    csv_path = r"cu_citadel.csv"  # Adjust the path as necessary
+    summary = lida.summarize(csv_path, summary_method="default", textgen_config=textgen_config)  # Ensure textgen_config is defined
+    charts = lida.visualize(summary=summary, goal=user_input, textgen_config=textgen_config)
+    if charts:
+        image_base64 = charts[0].raster
+        img = base64_to_image(image_base64)
+        st.image(img)
+        st.markdown("---")
 
 def calculate_growth_rate(df, attribute, group, group_value, quarter_1, quarter_2):
     # Filter the data for the selected group in the given quarters
@@ -311,7 +291,7 @@ def main():
         # Use columns only for displaying the prompts
         col_layout = st.columns(3)
         for idx, prompt in enumerate(st.session_state['dynamic_prompts']):
-            with col_layout[idx % 3]:  # Distribute prompts across columns['chat_history'][-1]
+            with col_layout[idx % 3]:  # Distribute prompts across columns
                 if st.button(prompt, key=f"prompt_{idx}"):
                     st.session_state['selected_prompt'] = prompt
                     # Flag indicating that a prompt has been selected
@@ -328,14 +308,6 @@ def main():
         user_input = st.chat_input("Type your question here...", key="user_input")
         if user_input:
             process_user_input(user_input, context, chat_container, regenerate=False)
-      
-            st.session_state['chat_history'].append({'user': user_input, 'bot': ''})  # Placeholder bot response
-
-            # Generate new prompts based on updated chat history
-            st.session_state['dynamic_prompts'] = generate_suggested_prompts(context, st.session_state['chat_history'])
-
-            # # Simulate bot response (you should replace this with the actual bot response)
-            # st.session_state['chat_history'][-1]['bot'] = "Bot's response to the user's question"
 
         # Button to regenerate the last response
         if 'last_user_input' in st.session_state and st.button("Regenerate Last Response"):
@@ -425,7 +397,6 @@ def main():
             file_paths1 = r'10Year+latQ.csv'
             file_paths2 = r'FOICU.txt'
             file_paths3 = r'ATM Locations.csv'
-            
             # df, df2 = load_data_from_db(file_path1,file_path2)
             df = pd.read_csv(file_paths1)
             df2 = pd.read_csv(file_paths2)
