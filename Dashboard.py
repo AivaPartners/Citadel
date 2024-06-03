@@ -40,7 +40,7 @@ openai.api_key = os.getenv('OPENAI_API_KEY')
 lida = Manager(text_gen=llm("openai"))
 textgen_config = TextGenerationConfig(n=1, temperature=0.5, model="gpt-4-turbo", use_cache=True)
 
-file_path = r"cu_citedel.csv"
+file_path = r"cu_citadel.csv"
 
 # Function to convert base64 string to Image
 def base64_to_image(base64_string):
