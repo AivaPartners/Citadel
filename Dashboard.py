@@ -334,8 +334,8 @@ def main():
             # Generate new prompts based on updated chat history
             st.session_state['dynamic_prompts'] = generate_suggested_prompts(context, st.session_state['chat_history'])
 
-            # Simulate bot response (you should replace this with the actual bot response)
-            st.session_state['chat_history'][-1]['bot'] = "Bot's response to the user's question"
+            # # Simulate bot response (you should replace this with the actual bot response)
+            # st.session_state['chat_history'][-1]['bot'] = "Bot's response to the user's question"
 
         # Button to regenerate the last response
         if 'last_user_input' in st.session_state and st.button("Regenerate Last Response"):
