@@ -56,7 +56,7 @@ def load_and_preprocess_csv(file_path):
     df = pd.read_csv(file_path)
     # Example preprocessing: Concatenate the first few rows into a string to use as context.
     # Adjust this based on your CSV structure and needs.
-    context = ". ".join(df.head().apply(lambda row: ', '.join(row.astype(str)), axis=1)) + "."
+    context = ". ".join(df.apply(lambda row: ', '.join(row.astype(str)), axis=1)) + "."
     return context
     
 
