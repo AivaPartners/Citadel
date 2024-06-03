@@ -39,7 +39,7 @@ load_dotenv()
 openai.api_key = os.getenv('OPENAI_API_KEY')
 
 lida = Manager(text_gen=llm("openai"))
-textgen_config = TextGenerationConfig(n=1, temperature=0.5, model="gpt-4-turbo", use_cache=True)
+textgen_config = TextGenerationConfig(n=1, temperature=0.5, model="gpt-3.5-turbo", use_cache=True)
 
 file_path = r"cu_citadel.csv"
 
@@ -65,7 +65,7 @@ def query_gpt_3_5_turbo_with_context(prompt, context):
     Queries GPT-3.5 Turbo with a given prompt and context.
     """
     client = openai.OpenAI(api_key=openai.api_key)
-    model="gpt-4-turbo"
+    model="gpt-3.5-turbo"
     messages = [
     {
         "role": "system",
